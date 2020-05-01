@@ -10,7 +10,7 @@ import SwiftUI
 import SpriteKit
 
 class SKGameScene: SKScene {
-    var skPlayerSettings = UserSettings()
+    var userSettings: UserSettings?
     
     var bubbles: [Bubble] = [Bubble]()
     
@@ -20,24 +20,14 @@ class SKGameScene: SKScene {
     override func didMove(to view: SKView) {
     }
     
-//    class func newGameScene() -> GameScene {
-//        // Load 'GameScene.sks' as an SKScene.
-//        guard let scene = SKScene(fileNamed: "GameScene") as? GameScene else {
-//            print("Failed to load GameScene.sks")
-//            abort()
-//        }
-//
-//        // Set the scale mode to scale to fit the window
-//        scene.scaleMode = .aspectFill
-//
-//        scene.backgroundColor = .red
-//
-//        return scene
-//    }
+    init(size: CGSize, settings: UserSettings) {
+        super.init(size: size)
+        userSettings = settings
+    }
     
-//    func setUpScene() {
-////        spawnBubbles(number: 3)
-//    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func update(_ currentTime: TimeInterval) {
         // Initialize _lastUpdateTime if it has not already been
@@ -126,10 +116,8 @@ extension SKGameScene {
             let location = touch.location(in: self)
             for node in self.bubbles {
                 if node.contains(location) {
-//                    self.$playerSettings.score += Int(node.gamePoints)
+                    self.userSettings?.playerScore += Int(node.gamePoints)
                     node.removeFromParent()
-                    
-                    print(playerSettings.playerScore)
                 }
             }
         }
