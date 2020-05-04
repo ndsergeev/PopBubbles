@@ -11,68 +11,150 @@ import SwiftUI
 
 
 struct ContentView: View {
-    @EnvironmentObject var userSettings: UserSettings
+    @EnvironmentObject var prefs: Prefs
 
     var body: some View {
-        StartView()
+        if prefs.lastPlayerName.isEmpty {
+            return AnyView(LoginView())
+        } else {
+            return AnyView(HelloView())
+        }
     }
 }
 
+struct LoginView: View {
+    @EnvironmentObject var prefs: Prefs
+    @State var nickname: String = ""
+    @State var isFilled: Bool = false
+    @State var showErrorMessage: Bool = false
+    @State var navigationIsActive: Bool = false
+    
+    var body: some View {
+        let textFieldBinding = Binding<String>(get: {
+            self.nickname
+        }, set: {
+            self.nickname = $0
+            self.showErrorMessage = self.nickname.isEmpty ? true : false
+        })
+        
+        return NavigationView {
+            VStack {
+                Spacer()
+                
+                Text("PoPit 🎈").font(.system(size: 48))
+                
+                Spacer()
+                
+                Text("Time to pop some bubbles?!")
+                    .font(.title)
+                
+                TextField("Enter Your Name", text: textFieldBinding)
+                    .font(.title)
+                    .multilineTextAlignment(.center)
+                
+                Text(self.showErrorMessage ? "Please, fill your name to continue" : " ")
+                    .foregroundColor(.red)
+            
+                Spacer()
+                
+                
+                if self.nickname == "" {
+                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
+                    .hiddenNavigationBarStyle()
+                    .font(.title)
+                    .foregroundColor(.gray)
+                } else {
+                    // move on case
+                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
+                        .hiddenNavigationBarStyle()
+                        .font(.title)
+                }
+//                if self.nickname == "" {
+//                    Button(action: {
+//                        if self.nickname == "" {
+//                            self.showErrorMessage = true
+//                        }
+//                    }, label: {
+//                        NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
+//                            .hiddenNavigationBarStyle()
+//                            .font(.title)
+//                            .foregroundColor(.gray)
+//
+//                    })
+//                } else {
+//                    // move on case
+//                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
+//                        .hiddenNavigationBarStyle()
+//                        .font(.title)
+//                }
+                
+                Spacer()
+            }
+        }
+    }
+}
+
+struct HelloView: View {
+    @EnvironmentObject var prefs: Prefs
+    
+    var body: some View {
+        Text("Hello, \(self.prefs.lastPlayerName)")
+    }
+}
+
+
 struct StartView: View {
-    @EnvironmentObject var userSettings: UserSettings
+    @EnvironmentObject var prefs: Prefs
     
     var body: some View {
         NavigationView{
             VStack{
-                Text("Here we go again").font(.largeTitle)
-                Text("Score \(self.userSettings.playerScore)").font(.title)
-                Button(action: {self.userSettings.playerScore += 1}) {
+                Text("Hello, \(self.prefs.lastPlayerName)!")
+                Text("Your last score: \(self.prefs.lastScore)").font(.title)
+                Button(action: { self.prefs.lastScore += 1 }) {
                     Text("PRESS ME")
                 }
+                
+                HStack {
+                    Slider(value: self.$prefs.gameplayTimeSlider, in: 0...60, step: 5)
+                    Text("\(self.prefs.gameplayTimeSlider, specifier: "%.f")")
+                }.padding(20)
+                
+                HStack {
+                    Slider(value: self.$prefs.bubbleNumberSlider, in: 0...15, step: 1)
+                    Text("\(self.prefs.bubbleNumberSlider, specifier: "%.f")")
+                }.padding(20)
                 
                 NavigationLink(destination: GameSwiftUIView()) {
                         Text("Start Game")
                 }
-                .hiddenNavigationBarStyle()
-                .transition(.opacity)
-                .foregroundColor(Color.red)
-                .padding()
-                .background(Color(.green))
-                .cornerRadius(4.0)
-                .padding(Edge.Set.vertical, 20)
-                
-                NavigationLink(destination: AnotherView()) {
-                        Text("ANOTHER")
-                }
-                .transition(.offset())
-                .hiddenNavigationBarStyle()
-                .foregroundColor(Color.red)
-                .padding()
-                .background(Color(.green))
-                .cornerRadius(4.0)
-                .padding(Edge.Set.vertical, 20)
+                    .hiddenNavigationBarStyle()
+                    .foregroundColor(Color.red)
+                    .padding()
+                    .background(Color(.green))
+                    .cornerRadius(4.0)
+                    .padding(Edge.Set.vertical, 20)
             }
         }
     }
 }
 
 struct GameSwiftUIView: View {
-    @EnvironmentObject var userSettings: UserSettings
+    @EnvironmentObject var prefs: Prefs
     
     var body: some View {
         GameView()
         .overlay(
              VStack {
                 HStack {
-                    Text("Score: \(self.userSettings.playerScore)")
+                    Text("Score: \(self.prefs.lastScore)")
 
                     Spacer()
 
-                    Button(action: { self.userSettings.playerScore += 1 }) {
+                    Button(action: { self.prefs.lastScore += 1 }) {
                         Text("Game")
                     }
                 }
-                .environmentObject(userSettings)
                 .padding(20)
                 .foregroundColor(.white)
                 .background(Color(.clear))
@@ -84,18 +166,17 @@ struct GameSwiftUIView: View {
 }
 
 struct AnotherView: View {
-    @EnvironmentObject var userSettings: UserSettings
+    @EnvironmentObject var prefs: Prefs
     
     var body: some View {
         VStack {
-            Button(action: {self.userSettings.playerScore += 1}) {
+            Button(action: { self.prefs.lastScore += 1 }) {
                 Text("PRESS ME")
             }
             
             NavigationLink(destination: StartView()) {
-                    Text("Score: \(self.userSettings.playerScore)")
+                Text("Score: \(self.prefs.lastScore)")
             }
-            .transition(.offset())
             .hiddenNavigationBarStyle()
             .foregroundColor(Color.red)
             .padding()
@@ -122,12 +203,11 @@ extension View {
 }
 
 #if DEBUG
-let userSettings = UserSettings()
+let prefs = Prefs()
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environmentObject(userSettings)
+        ContentView().environmentObject(prefs)
     }
 }
 #endif
-

@@ -14,47 +14,35 @@ extension UserDefaults {
     }
 }
 
-struct PlayerSettings {
-    public var lastPlayerName: String
-    public var highestScore: Int
-    public var lastTimer: Int
+class Prefs: ObservableObject {
+    @Published var lastPlayerName: String
+    @Published var highestScore: Int
     
-    public var lastScore: Int
+    @Published var lastScore: Int
+    
+    @Published var gameplayTimeSlider: Double
+    @Published var bubbleNumberSlider: Double
     
     init() {
         let defaults = UserDefaults.standard
         
         if UserDefaults.exists(key: "PlayerName") {
-            self.lastPlayerName = defaults.string(forKey: "PlayerName")!
-            self.highestScore = defaults.integer(forKey: "\(self.lastPlayerName)_HS")
-            self.lastTimer = defaults.integer(forKey: "\(self.lastPlayerName)_LT")
+            let _lastPlayerName = defaults.string(forKey: "PlayerName")!
+            let _highestScore = defaults.integer(forKey: "\(_lastPlayerName)_HS")
+            let _gameplayTimeSlider = defaults.double(forKey: "\(_lastPlayerName)_LT")
+            let _bubbleNumberSlider = defaults.double(forKey: "\(_lastPlayerName)_BN")
+            
+            self.lastPlayerName = _lastPlayerName
+            self.highestScore = _highestScore
+            self.gameplayTimeSlider = _gameplayTimeSlider
+            self.bubbleNumberSlider = _bubbleNumberSlider
         } else {
             lastPlayerName = ""
             highestScore = 0
-            lastTimer = 0
+            gameplayTimeSlider = 60
+            bubbleNumberSlider = 8
         }
         
         lastScore = 0
     }
-}
-
-struct GameSettings {
-    var gameplayTimeSlider: Double = 0
-    var bubbleNumberSlider: Double = 0
-    
-    init(playerName: String) {
-        let defaults = UserDefaults.standard
-        self.gameplayTimeSlider = defaults.double(forKey: "\(playerName)_LT")
-        self.bubbleNumberSlider = defaults.double(forKey: "\(playerName)_BN")
-        
-    }
-}
-
-class Prefs: ObservableObject {
-    @Published var lastPlayer = PlayerSettings.self
-    @Published var gameSettings = GameSettings.self
-}
-
-class UserSettings: ObservableObject {
-    @Published var playerScore: Int = 0
 }

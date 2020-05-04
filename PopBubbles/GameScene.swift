@@ -10,7 +10,7 @@ import SwiftUI
 import SpriteKit
 
 class SKGameScene: SKScene {
-    var userSettings: UserSettings?
+    var prefs: Prefs?
     
     var bubbles: [Bubble] = [Bubble]()
     
@@ -20,9 +20,9 @@ class SKGameScene: SKScene {
     override func didMove(to view: SKView) {
     }
     
-    init(size: CGSize, settings: UserSettings) {
+    init(size: CGSize, prefs: Prefs) {
         super.init(size: size)
-        userSettings = settings
+        self.prefs = prefs
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -116,7 +116,7 @@ extension SKGameScene {
             let location = touch.location(in: self)
             for node in self.bubbles {
                 if node.contains(location) {
-                    self.userSettings?.playerScore += Int(node.gamePoints)
+                    self.prefs?.lastScore += Int(node.gamePoints)
                     node.removeFromParent()
                 }
             }

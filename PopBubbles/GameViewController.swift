@@ -12,19 +12,19 @@ import SpriteKit
 import GameplayKit
 
 struct GameView: UIViewRepresentable {
-    @EnvironmentObject var userSettings: UserSettings
+    @EnvironmentObject var prefs: Prefs
     
     class Coordinator: NSObject {
         var scene: SKScene?
-        var userSettings: UserSettings
+        var prefs: Prefs
         
-        init(settings: UserSettings) {
-            self.userSettings = settings
+        init(prefs: Prefs) {
+            self.prefs = prefs
         }
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(settings: self.userSettings)
+        return Coordinator(prefs: self.prefs)
     }
 
     func makeUIView(context: Context) -> SKView {
@@ -33,9 +33,9 @@ struct GameView: UIViewRepresentable {
         view.showsFPS = true
         view.showsNodeCount = true
         
-        print("\nScore is \(context.coordinator.userSettings.playerScore)\n")
+        print("\nScore is \(context.coordinator.prefs.lastScore)\n")
 
-        let mainScene = SKGameScene(size: view.bounds.size, settings: context.coordinator.userSettings)
+        let mainScene = SKGameScene(size: view.bounds.size, prefs: context.coordinator.prefs)
         mainScene.scaleMode = .resizeFill
         context.coordinator.scene = mainScene
         return view
@@ -55,7 +55,7 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let scene = SKGameScene(size: view.bounds.size, settings: userSettings)
+        let scene = SKGameScene(size: view.bounds.size, prefs: prefs)
 
         // Present the scene
         let skView = self.view as! SKView
