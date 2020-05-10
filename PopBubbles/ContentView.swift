@@ -6,9 +6,8 @@
 //  Copyright © 2020 Nikita Sergeev. All rights reserved.
 //
 
-import SpriteKit
 import SwiftUI
-
+import SpriteKit
 
 struct ContentView: View {
     @EnvironmentObject var prefs: Prefs
