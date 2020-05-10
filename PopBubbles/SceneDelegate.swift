@@ -12,6 +12,8 @@ import SwiftUI
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    
+    // I am making Prefs() instance global within the app's lifecycle
     let prefs = Prefs()
 
 
@@ -21,6 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         // Create the SwiftUI view that provides the window contents.
+        // Also, I share the Prefs() instance with all SwiftUI views
         let contentView = ContentView().environmentObject(prefs)
 
         // Use a UIHostingController as window root view controller.

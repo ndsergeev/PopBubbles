@@ -18,6 +18,7 @@ class SKGameScene: SKScene {
     private var bubbleExistsTime: TimeInterval = 0
     
     override func didMove(to view: SKView) {
+        backgroundColor = .darkGray
     }
     
     init(size: CGSize, prefs: Prefs) {
@@ -35,7 +36,8 @@ class SKGameScene: SKScene {
             self.lastUpdateTime = currentTime
             
             // it also inits animation (SKAction) inside
-            spawnBubbles(number: 10)
+            spawnBubbles(number: Int(prefs!.bubbleNumberSlider))
+            print("HERE IT IS: \(prefs!.bubbleNumberSlider)")
         }
         
         let delta = currentTime - self.lastUpdateTime

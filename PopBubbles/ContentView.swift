@@ -13,11 +13,14 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var prefs: Prefs
 
+    // Probably it is better to put this init in the AppDelegate
     var body: some View {
         if prefs.lastPlayerName.isEmpty {
+            print("That is \(prefs.lastPlayerName)")
             return AnyView(LoginView())
         } else {
-            return AnyView(HelloView())
+            print("That is \(prefs.lastPlayerName)")
+            return AnyView(StartView())
         }
     }
 }
@@ -27,14 +30,21 @@ struct LoginView: View {
     @State var nickname: String = ""
     @State var isFilled: Bool = false
     @State var showErrorMessage: Bool = false
-    @State var navigationIsActive: Bool = false
+    @State var canNavigate: Bool = false
+    @State var selection : Int? = nil
     
     var body: some View {
         let textFieldBinding = Binding<String>(get: {
             self.nickname
         }, set: {
             self.nickname = $0
-            self.showErrorMessage = self.nickname.isEmpty ? true : false
+            if self.nickname.isEmpty {
+                self.showErrorMessage = true
+                self.canNavigate = false
+            } else {
+                self.showErrorMessage = false
+                self.canNavigate = true
+            }
         })
         
         return NavigationView {
@@ -57,36 +67,20 @@ struct LoginView: View {
             
                 Spacer()
                 
+                NavigationLink(destination: StartView(), tag: 1, selection: self.$selection) {
+                    Text("")
+                }.hiddenNavigationBarStyle()
                 
-                if self.nickname == "" {
-                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
-                    .hiddenNavigationBarStyle()
-                    .font(.title)
-                    .foregroundColor(.gray)
-                } else {
-                    // move on case
-                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
-                        .hiddenNavigationBarStyle()
+                Button(action: {
+                    if self.canNavigate == true {
+                        self.selection = 1
+                        self.prefs.lastPlayerName = self.nickname
+                    }
+                }) {
+                    Text("Next")
                         .font(.title)
+                        .foregroundColor(self.canNavigate ? .blue : .gray)
                 }
-//                if self.nickname == "" {
-//                    Button(action: {
-//                        if self.nickname == "" {
-//                            self.showErrorMessage = true
-//                        }
-//                    }, label: {
-//                        NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
-//                            .hiddenNavigationBarStyle()
-//                            .font(.title)
-//                            .foregroundColor(.gray)
-//
-//                    })
-//                } else {
-//                    // move on case
-//                    NavigationLink("Next", destination: StartView(), isActive: $navigationIsActive)
-//                        .hiddenNavigationBarStyle()
-//                        .font(.title)
-//                }
                 
                 Spacer()
             }
@@ -94,36 +88,33 @@ struct LoginView: View {
     }
 }
 
-struct HelloView: View {
-    @EnvironmentObject var prefs: Prefs
-    
-    var body: some View {
-        Text("Hello, \(self.prefs.lastPlayerName)")
-    }
-}
-
-
 struct StartView: View {
     @EnvironmentObject var prefs: Prefs
     
     var body: some View {
         NavigationView{
             VStack{
-                Text("Hello, \(self.prefs.lastPlayerName)!")
-                Text("Your last score: \(self.prefs.lastScore)").font(.title)
-                Button(action: { self.prefs.lastScore += 1 }) {
-                    Text("PRESS ME")
-                }
+                Spacer()
+                Spacer()
                 
+                Group {
+                    Text("\(self.prefs.lastPlayerName),")
+                    Text("your last score is \(self.prefs.lastScore)")
+                }.font(.title)
+                
+                // hardcoded range [1]
                 HStack {
-                    Slider(value: self.$prefs.gameplayTimeSlider, in: 0...60, step: 5)
+                    Slider(value: self.$prefs.gameplayTimeSlider, in: 5...60, step: 5)
                     Text("\(self.prefs.gameplayTimeSlider, specifier: "%.f")")
                 }.padding(20)
                 
+                // hardcoded range [2]
                 HStack {
-                    Slider(value: self.$prefs.bubbleNumberSlider, in: 0...15, step: 1)
+                    Slider(value: self.$prefs.bubbleNumberSlider, in: 1...15, step: 1)
                     Text("\(self.prefs.bubbleNumberSlider, specifier: "%.f")")
                 }.padding(20)
+                
+                Spacer()
                 
                 NavigationLink(destination: GameSwiftUIView()) {
                         Text("Start Game")
@@ -134,6 +125,8 @@ struct StartView: View {
                     .background(Color(.green))
                     .cornerRadius(4.0)
                     .padding(Edge.Set.vertical, 20)
+                
+                Spacer()
             }
         }
     }
@@ -144,6 +137,8 @@ struct GameSwiftUIView: View {
     
     var body: some View {
         GameView()
+        .edgesIgnoringSafeArea(.bottom)
+        .background(Color(.darkGray).edgesIgnoringSafeArea(.all))
         .overlay(
              VStack {
                 HStack {

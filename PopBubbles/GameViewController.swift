@@ -32,8 +32,6 @@ struct GameView: UIViewRepresentable {
         view.preferredFramesPerSecond = 60
         view.showsFPS = true
         view.showsNodeCount = true
-        
-        print("\nScore is \(context.coordinator.prefs.lastScore)\n")
 
         let mainScene = SKGameScene(size: view.bounds.size, prefs: context.coordinator.prefs)
         mainScene.scaleMode = .resizeFill
