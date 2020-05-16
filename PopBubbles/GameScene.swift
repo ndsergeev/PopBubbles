@@ -20,6 +20,7 @@ class SKGameScene: SKScene {
     // bubble spawn within each one
     var cells: [CGRect] = [CGRect]()
     
+    private var gameWasPaused: Bool = false
     private var lastUpdateTime: TimeInterval = 0
     private var bubbleExistsTime: TimeInterval = 0
     
@@ -30,8 +31,9 @@ class SKGameScene: SKScene {
     init(size: CGSize, prefs: Prefs) {
         super.init(size: size)
         self.prefs = prefs
-
-        // receiving from the number of Bubbles from Slider
+        self.prefs!.gameIsPaused = false
+        self.prefs!.gameIsOver = false
+        self.prefs!.timer = self.prefs!.gameplayTimeSlider
         backgroundColor = .darkGray
     }
     
@@ -40,6 +42,7 @@ class SKGameScene: SKScene {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        
         // Initialize _lastUpdateTime if it has not already been
         if (self.lastUpdateTime == 0) {
             self.lastUpdateTime = currentTime
@@ -50,27 +53,58 @@ class SKGameScene: SKScene {
             spawnBubbles(number: Int(prefs!.bubbleNumberSlider))
         }
         
-        // HERE YOU SHOULD FINISH THE GAME IF THE TIMER IS OVER
+        self.view?.isPaused = !self.prefs!.gameIsOver ? self.prefs!.gameIsPaused : true
         
-        let delta = currentTime - self.lastUpdateTime
-        self.bubbleExistsTime += delta
+        let delta = !gameWasPaused ? currentTime - self.lastUpdateTime : 0
         
-        if self.bubbleExistsTime > 5 {
-            if !bubbles.isEmpty {
-                for bubble in bubbles {
-                    bubble.removeFromParent()
-                }
+        if !self.view!.isPaused {
+            self.gameWasPaused = false
+            self.prefs!.timer -= delta
+            
+            self.bubbleExistsTime += delta
+            
+            if self.bubbleExistsTime > 5 {
+                
+                removeAllBubbles()
+                
+                spawnBubbles(number: Int(prefs!.bubbleNumberSlider))
+                
+                self.bubbleExistsTime = 0
             }
+        } else {
+            self.gameWasPaused = true
+        }
+        
+        if self.prefs!.timer <= 0.0 && !self.prefs!.gameIsOver {
+            self.removeAllBubbles()
             
-            spawnBubbles(number: Int(prefs!.bubbleNumberSlider))
+            print("Game is over")
             
-            self.bubbleExistsTime = 0
+            self.prefs!.timer = 0
+            self.prefs!.gameIsOver = true
+            self.view!.isPaused = true
         }
         
         self.lastUpdateTime = currentTime
     }
     
-    func splitInCells(x: Int, y: Int) -> Void {
+    func removeAllBubbles() {
+        // function removes all bubbles
+        // from the scene
+        if !bubbles.isEmpty {
+            for bubble in bubbles {
+                bubble.removeFromParent()
+            }
+        }
+    }
+    
+    func splitInCells(x: Int, y: Int) {
+        // function takes max possible number
+        // of bubbles and efficiently splits the screen
+        // into segments to spawn bubbles randomly
+        
+        // Coordinates and sizes of every segment (or cell)
+        // are recorded as an element of 'cells' array
         let height: Int = Int(self.size.height) / y
         let width: Int = Int(self.size.width) / x
         
@@ -81,7 +115,8 @@ class SKGameScene: SKScene {
         }
     }
     
-    func calcCellSizes(number: Int) -> Void {
+    func calcCellSizes(number: Int) {
+        // hardcoded for the task of max 15 bubbles
         switch number {
         case 1...3:
             splitInCells(x: 1, y: number)
@@ -159,7 +194,8 @@ class SKGameScene: SKScene {
 }
 
 #if os(iOS)
-// Touch-based event handling
+// Touch-based event handling for iOS
+// in case of MacOS there should be other implementation
 extension SKGameScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {

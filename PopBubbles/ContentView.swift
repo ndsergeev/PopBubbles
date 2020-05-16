@@ -15,10 +15,10 @@ struct ContentView: View {
     // Probably it is better to put this init in the AppDelegate
     var body: some View {
         if prefs.lastPlayerName.isEmpty {
-            print("That is \(prefs.lastPlayerName)")
+//            print("That is \(prefs.lastPlayerName)")
             return AnyView(LoginView())
         } else {
-            print("That is \(prefs.lastPlayerName)")
+//            print("That is \(prefs.lastPlayerName)")
             return AnyView(StartView())
         }
     }
@@ -132,22 +132,40 @@ struct StartView: View {
 }
 
 struct GameSwiftUIView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
     @EnvironmentObject var prefs: Prefs
+    @State var selection : Int? = nil
     
     var body: some View {
         GameView()
         .edgesIgnoringSafeArea(.bottom)
         .background(Color(.darkGray).edgesIgnoringSafeArea(.all))
+        .navigationBarBackButtonHidden(false)
         .overlay(
              VStack {
                 HStack {
-                    Text("Score: \(self.prefs.lastScore)")
+                    VStack {
+                        Text("Highest: \(self.prefs.highestScore)")
+                        Text("Current: \(self.prefs.lastScore)")
+                    }
 
                     Spacer()
+                    
+                    Text("⏱: \(self.prefs.timer,  specifier: "%.f")s")
+                    .font(.largeTitle)
+                    
+                    Spacer()
 
-                    Button(action: { self.prefs.lastScore += 1 }) {
-                        Text("Game")
+                    Button(action: {
+                        self.prefs.gameIsPaused.toggle()
+                    }) {
+                        Text("PAUSE")
+                        .padding(10)
                     }
+                    .disabled(prefs.gameIsOver)
+                    .background(self.prefs.gameIsOver ? Color.gray : Color.blue)
+                    .cornerRadius(4.0)
                 }
                 .padding(20)
                 .foregroundColor(.white)
@@ -155,29 +173,68 @@ struct GameSwiftUIView: View {
 
                 Spacer()
             }
-        )
-    }
-}
-
-struct AnotherView: View {
-    @EnvironmentObject var prefs: Prefs
-    
-    var body: some View {
-        VStack {
-            Button(action: { self.prefs.lastScore += 1 }) {
-                Text("PRESS ME")
+        ).overlay(
+            VStack {
+                Spacer()
+                if self.prefs.gameIsPaused {
+                    VStack {
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                            self.prefs.gameIsPaused.toggle()
+                        }) {
+                            Text("FINISH")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(20)
+                        }
+                        
+                        Button(action: {
+                            self.prefs.gameIsPaused.toggle()
+                        }) {
+                            Text("RESUME")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(20)
+                        }
+                    }
+                    .padding(30)
+                    .background(Color.green)
+                } else if self.prefs.gameIsOver {
+                    VStack {
+                        
+                        if prefs.lastScore > prefs.highestScore {
+                            Group {
+                                Group {
+                                    Text("You just broke the ceiling!")
+                                    Text("High Score: \(prefs.lastScore)")
+                                }.font(.title)
+                                Text("Before: \(prefs.highestScore)")
+                            }.foregroundColor(.white)
+                            .padding(20)
+                        } else {
+                            Text("Your time is over ⏱")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding(20)
+                        }
+                        
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("TO MENU")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding(20)
+                            .background(Color.blue)
+                            .cornerRadius(4.0)
+                        }
+                    }
+                    .padding(30)
+                    .background(Color.green)
+                }
+                Spacer()
             }
-            
-            NavigationLink(destination: StartView()) {
-                Text("Score: \(self.prefs.lastScore)")
-            }
-            .hiddenNavigationBarStyle()
-            .foregroundColor(Color.red)
-            .padding()
-            .background(Color(.green))
-            .cornerRadius(4.0)
-            .padding(Edge.Set.vertical, 20)
-        }
+        ).background(Color(.gray))
     }
 }
 

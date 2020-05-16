@@ -21,7 +21,11 @@ class Prefs: ObservableObject {
     @Published var lastScore: Int
     
     @Published var gameplayTimeSlider: Double
-    @Published var bubbleNumberSlider: Double
+    @Published var bubbleNumberSlider: TimeInterval
+    @Published var timer: TimeInterval
+    
+    @Published var gameIsPaused: Bool
+    @Published var gameIsOver: Bool
     
     init() {
         let defaults = UserDefaults.standard
@@ -36,13 +40,17 @@ class Prefs: ObservableObject {
             self.highestScore = _highestScore
             self.gameplayTimeSlider = _gameplayTimeSlider
             self.bubbleNumberSlider = _bubbleNumberSlider
+            self.timer = _bubbleNumberSlider
         } else {
             lastPlayerName = ""
             highestScore = 0
             gameplayTimeSlider = 60
-            bubbleNumberSlider = 8
+            timer = 60
+            bubbleNumberSlider = 15
         }
         
         lastScore = 0
+        gameIsPaused = false
+        gameIsOver = false
     }
 }
