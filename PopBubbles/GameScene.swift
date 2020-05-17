@@ -34,6 +34,7 @@ class SKGameScene: SKScene {
         self.prefs!.gameIsPaused = false
         self.prefs!.gameIsOver = false
         self.prefs!.timer = self.prefs!.gameplayTimeSlider
+        self.prefs!.lastScore = 0
         backgroundColor = .darkGray
     }
     
@@ -77,8 +78,6 @@ class SKGameScene: SKScene {
         
         if self.prefs!.timer <= 0.0 && !self.prefs!.gameIsOver {
             self.removeAllBubbles()
-            
-            print("Game is over")
             
             self.prefs!.timer = 0
             self.prefs!.gameIsOver = true
@@ -202,8 +201,13 @@ extension SKGameScene {
             let location = touch.location(in: self)
             for node in self.bubbles {
                 if node.contains(location) {
-                    self.prefs?.lastScore += Int(node.gamePoints)
+                    self.prefs!.lastScore += Int(node.gamePoints)
+                        
                     node.removeFromParent()
+                    
+                    if prefs!.highestScore < prefs!.lastScore {
+                        prefs!.highestScore = prefs!.lastScore
+                    }
                 }
             }
         }

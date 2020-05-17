@@ -72,8 +72,8 @@ struct LoginView: View {
                 
                 Button(action: {
                     if self.canNavigate == true {
-                        self.selection = 1
                         self.prefs.lastPlayerName = self.nickname
+                        self.selection = 1
                     }
                 }) {
                     Text("Next")
@@ -89,16 +89,52 @@ struct LoginView: View {
 
 struct StartView: View {
     @EnvironmentObject var prefs: Prefs
+    @State var selection: Int? = nil
+    @State var logoutAlert: Bool = false
     
     var body: some View {
-        NavigationView{
+        NavigationView {
             VStack{
-                Spacer()
+                HStack {
+                    NavigationLink(destination: LoginView(), tag: 0, selection: self.$selection) {
+                        Text("")
+                    }.hiddenNavigationBarStyle()
+                    
+                    Button(action: { self.logoutAlert = true }) {
+                        HStack {
+                            Image(systemName: "arrow.uturn.left.circle")
+                            Text("logout")
+                        }.font(.system(size: 24))
+                    }.alert(isPresented: $logoutAlert) {
+                        Alert(title: Text("Log out"),
+                              message: Text("Are you sure?"),
+                              primaryButton: .cancel(),
+                              secondaryButton: .destructive(Text("Log out")) {
+                                self.selection = 0
+                        })
+                    }
+                    
+                    Spacer()
+                    
+                    NavigationLink(destination: RatingView(), tag: 1, selection: self.$selection) {
+                        Text("")
+                    }.hiddenNavigationBarStyle()
+                    
+                    Button(action: {
+                        self.selection = 1
+                    }) {
+                        HStack {
+                            Text("rating")
+                            Image(systemName: "chart.bar")
+                        }.font(.system(size: 24))
+                    }
+                }.padding(24)
+                
                 Spacer()
                 
                 Group {
-                    Text("\(self.prefs.lastPlayerName),")
-                    Text("your last score is \(self.prefs.lastScore)")
+                    Text("\(self.prefs.lastPlayerName)").font(.largeTitle)
+                    Text("Highest Score: \(self.prefs.highestScore)")
                 }.font(.title)
                 
                 // hardcoded range [1]
@@ -115,16 +151,20 @@ struct StartView: View {
                 
                 Spacer()
                 
-                NavigationLink(destination: GameSwiftUIView()) {
-                        Text("Start Game")
-                }
-                    .hiddenNavigationBarStyle()
-                    .foregroundColor(Color.red)
-                    .padding()
-                    .background(Color(.green))
-                    .cornerRadius(4.0)
-                    .padding(Edge.Set.vertical, 20)
+                NavigationLink(destination: GameSwiftUIView(), tag: 2, selection: self.$selection) {
+                    Text("")
+                }.hiddenNavigationBarStyle()
                 
+                Button(action: { self.selection = 2 }) {
+                    Text("START")
+                    .padding()
+                }.font(.system(size: 24))
+                .padding(Edge.Set.horizontal, 30)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(4.0)
+                .disabled(prefs.bubbleNumberSlider < 1 || prefs.gameplayTimeSlider < 5)
+
                 Spacer()
             }
         }
@@ -135,10 +175,12 @@ struct GameSwiftUIView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @EnvironmentObject var prefs: Prefs
-    @State var selection : Int? = nil
+    @State var selection: Int? = nil
+    @State var localHighestScore: Int = 0
     
     var body: some View {
         GameView()
+        .onAppear( perform: { self.localHighestScore = self.prefs.highestScore } )
         .edgesIgnoringSafeArea(.bottom)
         .background(Color(.darkGray).edgesIgnoringSafeArea(.all))
         .navigationBarBackButtonHidden(false)
@@ -153,7 +195,7 @@ struct GameSwiftUIView: View {
                     Spacer()
                     
                     Text("⏱: \(self.prefs.timer,  specifier: "%.f")s")
-                    .font(.largeTitle)
+                        .font(.largeTitle)
                     
                     Spacer()
 
@@ -161,15 +203,13 @@ struct GameSwiftUIView: View {
                         self.prefs.gameIsPaused.toggle()
                     }) {
                         Text("PAUSE")
-                        .padding(10)
-                    }
-                    .disabled(prefs.gameIsOver)
-                    .background(self.prefs.gameIsOver ? Color.gray : Color.blue)
-                    .cornerRadius(4.0)
-                }
-                .padding(20)
-                .foregroundColor(.white)
-                .background(Color(.clear))
+                            .padding(10)
+                    }.disabled(prefs.gameIsOver)
+                        .background(self.prefs.gameIsOver ? Color.gray : Color.blue)
+                        .cornerRadius(4.0)
+                }.padding(20)
+                    .foregroundColor(.white)
+                    .background(Color(.clear))
 
                 Spacer()
             }
@@ -196,41 +236,39 @@ struct GameSwiftUIView: View {
                                 .foregroundColor(.white)
                                 .padding(20)
                         }
-                    }
-                    .padding(30)
-                    .background(Color.green)
+                    }.padding(30)
+                        .background(Color.green)
                 } else if self.prefs.gameIsOver {
                     VStack {
-                        
-                        if prefs.lastScore > prefs.highestScore {
+                        if prefs.lastScore > self.localHighestScore {
                             Group {
-                                Group {
-                                    Text("You just broke the ceiling!")
-                                    Text("High Score: \(prefs.lastScore)")
-                                }.font(.title)
-                                Text("Before: \(prefs.highestScore)")
+                                Text("Broke the ceiling!")
+                                    .bold()
+                                Text("High Score: \(prefs.lastScore)")
+                                Text("Before: \(self.localHighestScore)")
                             }.foregroundColor(.white)
-                            .padding(20)
+                                .font(.title)
+                                .padding(20)
                         } else {
                             Text("Your time is over ⏱")
-                            .font(.title)
-                            .foregroundColor(.white)
-                            .padding(20)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(20)
                         }
                         
                         Button(action: {
                             self.presentationMode.wrappedValue.dismiss()
+                            self.prefs.UpdatePlayer(nickname: self.prefs.lastPlayerName)
                         }) {
                             Text("TO MENU")
-                            .font(.title)
-                            .foregroundColor(.white)
-                            .padding(20)
-                            .background(Color.blue)
-                            .cornerRadius(4.0)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(20)
+                                .background(Color.blue)
+                                .cornerRadius(4.0)
                         }
-                    }
-                    .padding(30)
-                    .background(Color.green)
+                    }.padding(30)
+                        .background(Color.green)
                 }
                 Spacer()
             }
@@ -242,8 +280,8 @@ struct GameSwiftUIView: View {
 struct HiddenNavigationBar: ViewModifier {
     func body(content: Content) -> some View {
         content
-        .navigationBarTitle("", displayMode: .inline)
-        .navigationBarHidden(true)
+            .navigationBarTitle("", displayMode: .inline)
+            .navigationBarHidden(true)
     }
 }
 
@@ -258,7 +296,7 @@ let prefs = Prefs()
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environmentObject(prefs)
+        RatingView().environmentObject(prefs)
     }
 }
 #endif

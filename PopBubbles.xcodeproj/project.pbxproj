@@ -16,6 +16,7 @@
 		162116F424548268004B6DF4 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116F324548268004B6DF4 /* GameScene.swift */; };
 		162116F6245482F2004B6DF4 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116F5245482F2004B6DF4 /* GameView.swift */; };
 		162116F824548587004B6DF4 /* Bubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116F724548587004B6DF4 /* Bubble.swift */; };
+		162626862470FAE2009458B0 /* RatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162626852470FAE2009458B0 /* RatingView.swift */; };
 		164673D4245C7C190059B348 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164673D3245C7C190059B348 /* UserSettings.swift */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		162116F324548268004B6DF4 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		162116F5245482F2004B6DF4 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		162116F724548587004B6DF4 /* Bubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bubble.swift; sourceTree = "<group>"; };
+		162626852470FAE2009458B0 /* RatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingView.swift; sourceTree = "<group>"; };
 		164673D3245C7C190059B348 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +79,7 @@
 				162116E124548253004B6DF4 /* SceneDelegate.swift */,
 				161326A0246FA1EE00CF5F77 /* Components */,
 				162116E324548253004B6DF4 /* ContentView.swift */,
+				162626852470FAE2009458B0 /* RatingView.swift */,
 				162116F5245482F2004B6DF4 /* GameView.swift */,
 				162116F324548268004B6DF4 /* GameScene.swift */,
 				162116E524548253004B6DF4 /* Assets.xcassets */,
@@ -169,6 +172,7 @@
 				162116F6245482F2004B6DF4 /* GameView.swift in Sources */,
 				162116F824548587004B6DF4 /* Bubble.swift in Sources */,
 				162116E024548253004B6DF4 /* AppDelegate.swift in Sources */,
+				162626862470FAE2009458B0 /* RatingView.swift in Sources */,
 				162116E224548253004B6DF4 /* SceneDelegate.swift in Sources */,
 				164673D4245C7C190059B348 /* UserSettings.swift in Sources */,
 				162116F424548268004B6DF4 /* GameScene.swift in Sources */,
