@@ -20,8 +20,15 @@ class Bubble: SKShapeNode {
     private(set) var gamePoints: Int = 0
     var animPath: CGPath?
     
+    var color: BubbleColor?
+    var radius: CGFloat?
+    
+    
     init?(col: BubbleColor, pos: CGPoint, rad: CGFloat) {
         super.init()
+        
+        self.color = col
+        self.radius = rad
         
         self.lineWidth = 0
         

@@ -14,15 +14,21 @@ extension UserDefaults {
     }
 }
 
-struct Player : Identifiable {
-  let id: Int
-
-  let name: String
-  var highScore: Int
+class Player : Identifiable {
+    let id = UUID()
+    
+    let name: String
+    var highScore: Int
+    
+    init(name: String, score: Int) {
+        self.name = name
+        self.highScore = score
+    }
 }
 
 class Prefs: ObservableObject {
     // Player-based data
+    private var allPlayerNames = [String]()
     @Published var allPlayers = [Player]()
     
     @Published var lastPlayerName: String {
@@ -32,6 +38,7 @@ class Prefs: ObservableObject {
         
         didSet {
             LoadPlayer(nickname: lastPlayerName)
+            RecordAllPlayerNames(nickname: lastPlayerName)
         }
     }
     @Published var highestScore: Int
@@ -83,6 +90,30 @@ class Prefs: ObservableObject {
         lastScore = 0
         gameIsPaused = false
         gameIsOver = false
+        
+        allPlayerNames = Array(Set(defaults.array(forKey: "Players") as? [String] ?? [String]()))
+        
+        for index in 0..<allPlayerNames.count {
+            allPlayers.append(Player(name: allPlayerNames[index],
+                                     score: defaults.integer(forKey: "\(_lastPlayerName)_HS")))
+        }
+    }
+    
+    func RecordAllPlayerNames(nickname: String) {
+        var tmp = allPlayerNames
+        tmp.append(nickname)
+        tmp = Array(Set(tmp))
+        
+        if tmp.count > allPlayerNames.count {
+            let defaults = UserDefaults.standard
+            // 1
+            allPlayerNames = tmp
+            defaults.set(allPlayerNames, forKey: "Players")
+            
+            // 2
+            allPlayers.append(Player(name: allPlayerNames[allPlayers.count],
+                                     score: defaults.integer(forKey: "\(_lastPlayerName)_HS")))
+        }
     }
     
     // Unfortunately, init doesn't take function ->
@@ -129,24 +160,21 @@ class Prefs: ObservableObject {
         defaults.set(self.gameplayTimeSlider, forKey: "\(nickname)_TS")
         defaults.set(self.bubbleNumberSlider, forKey: "\(nickname)_NS")
     }
-
-    func UpdateName() {
-        UserDefaults.standard.set(self.lastPlayerName, forKey: "PlayerName")
-    }
     
-    func UpdateHighScore() {
-        UserDefaults.standard.set(self.highestScore, forKey: "\(self.lastPlayerName)_HS")
-    }
-    
-    func UpdateTimeSlider() {
-        UserDefaults.standard.set(self.gameplayTimeSlider, forKey: "\(self.lastPlayerName)_TS")
-    }
-    
-    func UpdateNumberSlider() {
-        UserDefaults.standard.set(self.bubbleNumberSlider, forKey: "\(self.lastPlayerName)_NS")
+    func UpdateHighScore(nickname: String, newHighScore: Int) {
+        for player in allPlayers {
+            if player.name == nickname {
+                if player.highScore < newHighScore {
+                    player.highScore = newHighScore
+                }
+            }
+        }
     }
     
     func ClearRecords() {
-        UserDefaults.resetStandardUserDefaults()
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
+        print(Array(UserDefaults.standard.dictionaryRepresentation().keys).count)
     }
 }

@@ -24,6 +24,8 @@ class SKGameScene: SKScene {
     private var lastUpdateTime: TimeInterval = 0
     private var bubbleExistsTime: TimeInterval = 0
     
+    private var previousBubbleColor: BubbleColor?
+    
     override func didMove(to view: SKView) {
         // moved from here to init(CGSize, Prefs)
     }
@@ -64,7 +66,7 @@ class SKGameScene: SKScene {
             
             self.bubbleExistsTime += delta
             
-            if self.bubbleExistsTime > 5 {
+            if self.bubbleExistsTime > 1 {
                 
                 removeAllBubbles()
                 
@@ -168,12 +170,20 @@ class SKGameScene: SKScene {
     
     func spawnBubbles(number: Int) -> Void {
         var cellsCopy = cells
+        
+        // remove redundand bubbles
+        // refer to calcCellSizes()
         let diff = cellsCopy.count-number
-
         if diff > 0 {
             for _ in 0..<diff {
                 cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
             }
+        }
+        
+        // remove random number of bubbles
+        let randomNumberOfTimes = Int.random(in: 0..<cellsCopy.count)
+        for _ in 0...randomNumberOfTimes {
+            cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
         }
         
         for cell in cellsCopy {
@@ -199,11 +209,18 @@ extension SKGameScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
-            for node in self.bubbles {
-                if node.contains(location) {
-                    self.prefs!.lastScore += Int(node.gamePoints)
-                        
-                    node.removeFromParent()
+            for bubble in self.bubbles {
+                if bubble.contains(location) {
+                    
+                    if bubble.color == previousBubbleColor {
+                        self.prefs!.lastScore += Int(((Double(bubble.gamePoints) * 1.5)).rounded())
+                    } else {
+                        self.prefs!.lastScore += Int(bubble.gamePoints)
+                    }
+                    
+                    previousBubbleColor = bubble.color
+                    
+                    bubble.removeFromParent()
                     
                     if prefs!.highestScore < prefs!.lastScore {
                         prefs!.highestScore = prefs!.lastScore
