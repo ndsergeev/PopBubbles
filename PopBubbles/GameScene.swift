@@ -11,6 +11,8 @@ import SpriteKit
 
 class SKGameScene: SKScene {
     // Variable under Observer, it is shared with SwiftUI
+    let PI: CGFloat = CGFloat.pi / 8
+    
     var prefs: Prefs?
     
     // Array of custom SKShapeNodes
@@ -84,6 +86,14 @@ class SKGameScene: SKScene {
             self.prefs!.timer = 0
             self.prefs!.gameIsOver = true
             self.view!.isPaused = true
+        }
+        
+        if !bubbles.isEmpty {
+            for bubble in bubbles {
+                if !bubble.hasActions() {
+                    self.animateBubbleContinously(bubble: bubble)
+                }
+            }
         }
         
         self.lastUpdateTime = currentTime
@@ -188,15 +198,29 @@ class SKGameScene: SKScene {
         
         for cell in cellsCopy {
             let bubRad = bubbleRadius()
-            let bub = Bubble(col: randBubbleColor(), pos: randBubblePositionInCell(cell: cell, radius: bubRad), rad: bubRad)
+            let position = randBubblePositionInCell(cell: cell, radius: bubRad)
+            let bub = Bubble(col: randBubbleColor(), pos: position , rad: bubRad)
             self.bubbles.append(bub!)
             self.addChild(bub!)
-            animateBubble(bubble: bub!)
+            
+            animateBubbleOnAppear(bubble: bub!)
         }
     }
+
+    func animateBubbleOnAppear(bubble: Bubble) {
+        let up: CGFloat = CGFloat(Float.random(in: 1.1...1.5))
+        let down: CGFloat = CGFloat(Float.random(in: 0.7...0.9))
+        
+        let scaleUp = SKAction.scale(to: up, duration: 0.2)
+        let scaleDown = SKAction.scale(to: down, duration: 0.2)
+        let toNormal = SKAction.scale(to: 1, duration: 0.1)
+        
+        let sequence = SKAction.sequence([scaleUp, scaleDown, toNormal])
+        bubble.run(sequence)
+    }
     
-    func animateBubble(bubble: Bubble) {
-        let animPath = SKAction.follow((bubble.animPath)!, asOffset: false, orientToPath: true, duration: 8)
+    func animateBubbleContinously(bubble: Bubble) {
+        let animPath = SKAction.follow((bubble.animPath)!, asOffset: false, orientToPath: true, duration: TimeInterval(PI * bubble.radius!))
         let repeatSequence = SKAction.repeatForever(SKAction.sequence([animPath, animPath.reversed()]))
         bubble.run(repeatSequence)
     }

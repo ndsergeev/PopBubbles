@@ -29,6 +29,7 @@ class Bubble: SKShapeNode {
         
         self.color = col
         self.radius = rad
+        self.position = pos
         
         self.lineWidth = 0
         
@@ -36,7 +37,7 @@ class Bubble: SKShapeNode {
         
         let pathRad: CGFloat = 0.25*rad
         
-        self.animPath = CGPath(ellipseIn: CGRect(origin: CGPoint(x: pos.x-pathRad/2, y:pos.y-pathRad/2), size: CGSize(width: pathRad, height: pathRad)), transform: nil)
+        self.animPath = CGPath(ellipseIn: CGRect(origin: CGPoint(x: pos.x-rad/4, y:pos.y - rad/8), size: CGSize(width: pathRad, height: pathRad)), transform: nil)
         
         switch col {
         case .red:

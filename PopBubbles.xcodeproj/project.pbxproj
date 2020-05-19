@@ -81,8 +81,8 @@
 			children = (
 				162116DF24548253004B6DF4 /* AppDelegate.swift */,
 				162116E124548253004B6DF4 /* SceneDelegate.swift */,
-				161326A0246FA1EE00CF5F77 /* Components */,
 				16A30A4024718E1F00FC5047 /* UI */,
+				161326A0246FA1EE00CF5F77 /* Components */,
 				162116F5245482F2004B6DF4 /* GameView.swift */,
 				162116F324548268004B6DF4 /* GameScene.swift */,
 				162116E524548253004B6DF4 /* Assets.xcassets */,

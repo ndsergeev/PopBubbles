@@ -24,15 +24,15 @@ struct RatingView: View {
                     
                     Spacer()
                     
-                    Text("Champions")
+                    Text("Score")
                     
                     Spacer()
                     
-                    Button(action: {
-                        self.prefs.ClearRecords()
-                    }) {
-                        Text("Clear")
-                    }
+//                    Button(action: {
+//                        self.prefs.ClearRecords()
+//                    }) {
+//                        Text("Clear")
+//                    }
                 }.font(.title)
                 .padding()
                 
