@@ -9,17 +9,31 @@
 import SwiftUI
 import SpriteKit
 
+class BubbleInCell {
+    var bubble: Bubble?
+    var cell: CGRect?
+    
+    init(cell: CGRect, bubble: Bubble) {
+        self.cell = cell
+        self.bubble = bubble
+    }
+}
+
 class SKGameScene: SKScene {
     // Variable under Observer, it is shared with SwiftUI
     let PI: CGFloat = CGFloat.pi / 8
+    let upperOffsetCoeff: CGFloat = 0.9
     
     var prefs: Prefs?
     
     // Array of custom SKShapeNodes
-    var bubbles: [Bubble] = [Bubble]()
+    
+    var numberOfRemovedBubbles: Int = 0
     
     // Use for splitting the view in sectors to random
     // bubble spawn within each one
+    var bubbleHolder: [BubbleInCell] = [BubbleInCell]()
+    
     var cells: [CGRect] = [CGRect]()
     
     private var gameWasPaused: Bool = false
@@ -88,10 +102,10 @@ class SKGameScene: SKScene {
             self.view!.isPaused = true
         }
         
-        if !bubbles.isEmpty {
-            for bubble in bubbles {
-                if !bubble.hasActions() {
-                    self.animateBubbleContinously(bubble: bubble)
+        if !bubbleHolder.isEmpty {
+            for item in bubbleHolder {
+                if !item.bubble!.hasActions() {
+                    self.animateBubbleContinously(bubble: item.bubble!)
                 }
             }
         }
@@ -102,10 +116,11 @@ class SKGameScene: SKScene {
     func removeAllBubbles() {
         // function removes all bubbles
         // from the scene
-        if !bubbles.isEmpty {
-            for bubble in bubbles {
-                bubble.removeFromParent()
+        if !bubbleHolder.isEmpty {
+            for item in bubbleHolder {
+                item.bubble?.removeFromParent()
             }
+            bubbleHolder.removeAll()
         }
     }
     
@@ -116,7 +131,8 @@ class SKGameScene: SKScene {
         
         // Coordinates and sizes of every segment (or cell)
         // are recorded as an element of 'cells' array
-        let height: Int = Int(self.size.height) / y
+        
+        let height: Int = Int(self.size.height * self.upperOffsetCoeff) / y
         let width: Int = Int(self.size.width) / x
         
         for iY in 0..<y { // height
@@ -179,37 +195,39 @@ class SKGameScene: SKScene {
     }
     
     func spawnBubbles(number: Int) -> Void {
-        var cellsCopy = cells
-        
-        // remove redundand bubbles
-        // refer to calcCellSizes()
-        let diff = cellsCopy.count-number
-        if diff > 0 {
-            for _ in 0..<diff {
-                cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
+        if !cells.isEmpty {
+            var cellsCopy = cells
+            // remove redundand bubbles
+            // refer to calcCellSizes()
+            let diff = cellsCopy.count-number
+            if diff > 0 {
+                for _ in 0..<diff {
+                    cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
+                }
             }
-        }
-        
-        // remove random number of bubbles
-        let randomNumberOfTimes = Int.random(in: 0..<cellsCopy.count)
-        for _ in 0...randomNumberOfTimes {
-            cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
-        }
-        
-        for cell in cellsCopy {
-            let bubRad = bubbleRadius()
-            let position = randBubblePositionInCell(cell: cell, radius: bubRad)
-            let bub = Bubble(col: randBubbleColor(), pos: position , rad: bubRad)
-            self.bubbles.append(bub!)
-            self.addChild(bub!)
             
-            animateBubbleOnAppear(bubble: bub!)
+            // remove random number of bubbles
+            for _ in cellsCopy {
+                if Bool.random() {
+                    cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
+                }
+            }
+            
+            for cell in cellsCopy {
+                let bubRad = bubbleRadius()
+                let position = randBubblePositionInCell(cell: cell, radius: bubRad)
+                let bub = Bubble(col: randBubbleColor(), pos: position, rad: bubRad)
+                bubbleHolder.append(BubbleInCell(cell: cell, bubble: bub!))
+                
+                self.addChild(bub!)
+                animateBubbleOnAppear(bubble: bub!)
+            }
         }
     }
 
     func animateBubbleOnAppear(bubble: Bubble) {
         let up: CGFloat = CGFloat(Float.random(in: 1.1...1.5))
-        let down: CGFloat = CGFloat(Float.random(in: 0.7...0.9))
+        let down: CGFloat = CGFloat(Float.random(in: 0.5...0.9))
         
         let scaleUp = SKAction.scale(to: up, duration: 0.2)
         let scaleDown = SKAction.scale(to: down, duration: 0.2)
@@ -231,20 +249,25 @@ class SKGameScene: SKScene {
 // in case of MacOS there should be other implementation
 extension SKGameScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if self.isPaused {
+            // if the game is paused touches outside shouldn't be counted
+            return
+        }
+        
         for touch in touches {
             let location = touch.location(in: self)
-            for bubble in self.bubbles {
-                if bubble.contains(location) {
+            for item in bubbleHolder {
+                if item.bubble!.contains(location) {
                     
-                    if bubble.color == previousBubbleColor {
-                        self.prefs!.lastScore += Int(((Double(bubble.gamePoints) * 1.5)).rounded())
+                    if item.bubble!.color == previousBubbleColor {
+                        self.prefs!.lastScore += Int(((Double(item.bubble!.gamePoints) * 1.5)).rounded())
                     } else {
-                        self.prefs!.lastScore += Int(bubble.gamePoints)
+                        self.prefs!.lastScore += Int(item.bubble!.gamePoints)
                     }
                     
-                    previousBubbleColor = bubble.color
+                    previousBubbleColor = item.bubble!.color
                     
-                    bubble.removeFromParent()
+                    item.bubble!.removeFromParent()
                     
                     if prefs!.highestScore < prefs!.lastScore {
                         prefs!.highestScore = prefs!.lastScore

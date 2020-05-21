@@ -33,12 +33,11 @@ class Prefs: ObservableObject {
     
     @Published var lastPlayerName: String {
         willSet {
-            UpdatePlayer(nickname: lastPlayerName)
+            recordLatestPlayerStats(nickname: lastPlayerName)
         }
         
         didSet {
-            LoadPlayer(nickname: lastPlayerName)
-            RecordAllPlayerNames(nickname: lastPlayerName)
+            loadPlayerStatByName(nickname: lastPlayerName)
         }
     }
     @Published var highestScore: Int
@@ -51,9 +50,9 @@ class Prefs: ObservableObject {
     @Published var gameIsOver: Bool
     @Published var lastScore: Int
     
+    private let defaults = UserDefaults.standard
+    
     init() {
-        let defaults = UserDefaults.standard
-        
         if UserDefaults.exists(key: "PlayerName") {
             let _lastPlayerName = defaults.string(forKey: "PlayerName")!
             lastPlayerName = _lastPlayerName
@@ -81,6 +80,8 @@ class Prefs: ObservableObject {
                 bubbleNumberSlider = 15
             }
         } else {
+            // I cannot use ResetVariables()
+            // because it is init
             lastPlayerName = ""
             highestScore = 0
             gameplayTimeSlider = 60
@@ -94,33 +95,31 @@ class Prefs: ObservableObject {
         allPlayerNames = Array(Set(defaults.array(forKey: "Players") as? [String] ?? [String]()))
         
         for index in 0..<allPlayerNames.count {
-            allPlayers.append(Player(name: allPlayerNames[index],
-                                     score: defaults.integer(forKey: "\(_lastPlayerName)_HS")))
+            let name = allPlayerNames[index]
+            let score = defaults.integer(forKey: "\(name)_HS")
+            allPlayers.append(Player(name: name, score: score))
         }
     }
     
-    func RecordAllPlayerNames(nickname: String) {
+    func updateAllPlayerNames(nickname: String) {
         var tmp = allPlayerNames
         tmp.append(nickname)
         tmp = Array(Set(tmp))
         
         if tmp.count > allPlayerNames.count {
-            let defaults = UserDefaults.standard
             // 1
             allPlayerNames = tmp
             defaults.set(allPlayerNames, forKey: "Players")
             
             // 2
-            allPlayers.append(Player(name: allPlayerNames[allPlayers.count],
-                                     score: defaults.integer(forKey: "\(_lastPlayerName)_HS")))
+            let score: Int = defaults.integer(forKey: "\(nickname)_HS")
+            allPlayers.append(Player(name: nickname, score: score))
         }
     }
     
     // Unfortunately, init doesn't take function ->
     // there is a code repeat
-    func LoadPlayer(nickname: String) {
-        let defaults = UserDefaults.standard
-        
+    func loadPlayerStatByName(nickname: String) {
         if UserDefaults.exists(key: "PlayerName") {
             if UserDefaults.exists(key: "\(nickname)_HS") {
                 let _highestScore = defaults.integer(forKey: "\(nickname)_HS")
@@ -145,36 +144,54 @@ class Prefs: ObservableObject {
                 bubbleNumberSlider = 15
             }
         } else {
-            highestScore = 0
-            gameplayTimeSlider = 60
-            timer = 60
-            bubbleNumberSlider = 15
+            // this is the case when it is a new
+            // player added after a game
+            resetVariables()
         }
+        updateAllPlayerNames(nickname: nickname)
     }
     
-    func UpdatePlayer(nickname: String) {
-        let defaults = UserDefaults.standard
-        
+    func recordLatestPlayerStats(nickname: String) {
+        // records latest preferences and scores to UserDefaults
         defaults.set(nickname, forKey: "PlayerName")
         defaults.set(self.highestScore, forKey: "\(nickname)_HS")
         defaults.set(self.gameplayTimeSlider, forKey: "\(nickname)_TS")
         defaults.set(self.bubbleNumberSlider, forKey: "\(nickname)_NS")
     }
     
-    func UpdateHighScore(nickname: String, newHighScore: Int) {
+    func updateHighScoreForPlayer(nickname: String, newHighScore: Int) {
         for player in allPlayers {
             if player.name == nickname {
                 if player.highScore < newHighScore {
                     player.highScore = newHighScore
+                    return
                 }
             }
         }
     }
     
-    func ClearRecords() {
+    func resetVariables() {
+        highestScore = 0
+        gameplayTimeSlider = 60
+        timer = 60
+        bubbleNumberSlider = 15
+    }
+    
+    func clearRecords() {
+        // remove Player data from current lists
+        allPlayerNames.removeAll()
+        allPlayers.removeAll()
+        
+        // clear all variables
+        resetVariables()
+        
+        // remove Player data from UserDefaults
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
-        print(Array(UserDefaults.standard.dictionaryRepresentation().keys).count)
+        
+        // It removes all data recorded by User, but keep all main keys
+        // required for the app:
+        // print(UserDefaults.standard.dictionaryRepresentation().keys)
     }
 }

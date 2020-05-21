@@ -14,11 +14,9 @@ struct ContentView: View {
 
     // Probably it is better to put this init in the AppDelegate
     var body: some View {
-        if prefs.lastPlayerName.isEmpty {
-//            print("That is \(prefs.lastPlayerName)")
+        if prefs.lastPlayerName.isEmpty || prefs.allPlayers.isEmpty {
             return AnyView(LoginView())
         } else {
-//            print("That is \(prefs.lastPlayerName)")
             return AnyView(StartView())
         }
     }
@@ -43,9 +41,9 @@ struct StartView: View {
                             Text("logout")
                         }.font(.system(size: 24))
                     }.alert(isPresented: $logoutAlert) {
-                        Alert(title: Text("Log out"),
+                        Alert(title: Text("Log out").bold(),
                               message: Text("Are you sure?"),
-                              primaryButton: .cancel(),
+                              primaryButton: .cancel( {self.logoutAlert = false} ),
                               secondaryButton: .destructive(Text("Log out")) {
                                 self.selection = 0
                         })
@@ -103,7 +101,7 @@ struct StartView: View {
 
                 Spacer()
             }
-        }
+        }.hiddenNavigationBarStyle()
     }
 }
 
@@ -111,8 +109,11 @@ struct StartView: View {
 struct HiddenNavigationBar: ViewModifier {
     func body(content: Content) -> some View {
         content
+            // these two hide the navigation bar
             .navigationBarTitle("", displayMode: .inline)
             .navigationBarHidden(true)
+            // to make iPad view look same as iPhone view
+            .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -126,8 +127,9 @@ extension View {
 let prefs = Prefs()
 
 struct ContentView_Previews: PreviewProvider {
+    
     static var previews: some View {
-        RatingView().environmentObject(prefs)
+        ContentView().environmentObject(prefs)
     }
 }
 #endif

@@ -34,7 +34,10 @@ struct LoginView: View {
             VStack {
                 Spacer()
                 
-                Text("PoPit 🎈").font(.system(size: 48))
+                HStack {
+                    Text("PoPit ")
+                    Text("🎈").animation(.interpolatingSpring(mass: 0.001, stiffness: 0.001, damping: 10, initialVelocity: 5))
+                }.font(.system(size: 48))
                 
                 Spacer()
                 
@@ -50,23 +53,32 @@ struct LoginView: View {
             
                 Spacer()
                 
-                NavigationLink(destination: StartView(), tag: 1, selection: self.$selection) {
+                NavigationLink(destination: StartView(), tag: 0, selection: self.$selection) {
                     Text("")
                 }.hiddenNavigationBarStyle()
                 
                 Button(action: {
                     if self.canNavigate == true {
                         self.prefs.lastPlayerName = self.nickname
-                        self.selection = 1
+                        self.selection = 0
                     }
                 }) {
                     Text("Next")
                         .font(.title)
                         .foregroundColor(self.canNavigate ? .blue : .gray)
-                }
+                }.disabled(!self.canNavigate)
                 
                 Spacer()
             }
-        }
+        }.hiddenNavigationBarStyle()
     }
 }
+
+#if DEBUG
+
+struct LoginView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginView().environmentObject(prefs)
+    }
+}
+#endif

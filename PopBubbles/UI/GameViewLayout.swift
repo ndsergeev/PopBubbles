@@ -17,45 +17,24 @@ struct GameViewLayout: View {
     
     var body: some View {
         GameView()
-        .onAppear( perform: { self.localHighestScore = self.prefs.highestScore } )
+        .onAppear( perform: {
+            self.localHighestScore = self.prefs.highestScore
+        } )
         .edgesIgnoringSafeArea(.bottom)
         .background(Color(.darkGray).edgesIgnoringSafeArea(.all))
-        .navigationBarBackButtonHidden(false)
+        .hiddenNavigationBarStyle()
         .overlay(
-             VStack {
-                HStack {
-                    VStack {
-                        Text("Highest: \(self.prefs.highestScore)")
-                        Text("Current: \(self.prefs.lastScore)")
-                    }
-
-                    Spacer()
-                    
-                    Text("⏱: \(self.prefs.timer,  specifier: "%.f")s")
-                        .font(.largeTitle)
-                    
-                    Spacer()
-
-                    Button(action: {
-                        self.prefs.gameIsPaused.toggle()
-                    }) {
-                        Text("PAUSE")
-                            .padding(10)
-                    }.disabled(prefs.gameIsOver)
-                        .background(self.prefs.gameIsOver ? Color.gray : Color.blue)
-                        .cornerRadius(4.0)
-                }.padding(20)
-                    .foregroundColor(.white)
-                    .background(Color(.clear))
-
-                Spacer()
-            }
+            GameStatsView()
         ).overlay(
             VStack {
                 Spacer()
-                if self.prefs.gameIsPaused {
+                if self.prefs.gameIsPaused && !self.prefs.gameIsOver {
                     VStack {
                         Button(action: {
+                            // In case of finishing the game before the timer
+                            // your progress is lost
+                            self.prefs.highestScore = self.localHighestScore
+                            
                             self.presentationMode.wrappedValue.dismiss()
                             self.prefs.gameIsPaused.toggle()
                         }) {
@@ -97,8 +76,10 @@ struct GameViewLayout: View {
                         HStack {
                             Button(action: {
                                 self.presentationMode.wrappedValue.dismiss()
-                                self.prefs.UpdatePlayer(nickname: self.prefs.lastPlayerName)
-                                self.prefs.UpdateHighScore(nickname: self.prefs.lastPlayerName, newHighScore: self.prefs.highestScore)
+                                self.GloballyUpdateHighScore()
+                                
+                                self.prefs.recordLatestPlayerStats(nickname: self.prefs.lastPlayerName)
+                                self.prefs.updateHighScoreForPlayer(nickname: self.prefs.lastPlayerName, newHighScore: self.prefs.highestScore)
                             }) {
                                 Text("MENU")
                                     .font(.title)
@@ -109,9 +90,16 @@ struct GameViewLayout: View {
                                     .cornerRadius(4.0)
                             }
                             
+                            NavigationLink(destination: RatingView(), tag: 0, selection: self.$selection) {
+                                Text("")
+                            }.hiddenNavigationBarStyle()
+                            
                             Button(action: {
-                                self.presentationMode.wrappedValue.dismiss()
-                                self.prefs.UpdatePlayer(nickname: self.prefs.lastPlayerName)
+//                                self.presentationMode.wrappedValue.dismiss()
+                                self.GloballyUpdateHighScore()
+                                
+                                self.prefs.recordLatestPlayerStats(nickname: self.prefs.lastPlayerName)
+                                self.selection = 0
                             }) {
                                 Text("SCORE")
                                     .font(.title)
@@ -127,6 +115,54 @@ struct GameViewLayout: View {
                 }
                 Spacer()
             }
-        ).background(Color(.gray))
+        )
+    }
+    
+    func GloballyUpdateHighScore() {
+        self.prefs.updateHighScoreForPlayer(nickname: self.prefs.lastPlayerName, newHighScore: self.prefs.highestScore)
     }
 }
+
+struct GameStatsView: View {
+    @EnvironmentObject var prefs: Prefs
+    
+    var body: some View {
+        VStack {
+            HStack {
+                VStack {
+                    Text("Highest: \(self.prefs.highestScore)")
+                    Text("Current: \(self.prefs.lastScore)")
+                }
+
+                Spacer()
+                
+                Text("⏱: \(self.prefs.timer,  specifier: "%.f")s")
+                    .font(.largeTitle)
+                
+                Spacer()
+
+                Button(action: {
+                    self.prefs.gameIsPaused.toggle()
+                }) {
+                    Text("PAUSE")
+                        .padding(10)
+                }.disabled(prefs.gameIsOver)
+                    .background(self.prefs.gameIsOver ? Color.gray : Color.blue)
+                    .cornerRadius(4.0)
+            }.padding(20)
+                .foregroundColor(.white)
+                .background(Color(.clear))
+
+            Spacer()
+        }
+    }
+}
+
+#if DEBUG
+
+struct GameView_Previews: PreviewProvider {
+    static var previews: some View {
+        GameView().environmentObject(prefs)
+    }
+}
+#endif
