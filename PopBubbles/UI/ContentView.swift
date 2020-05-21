@@ -25,7 +25,7 @@ struct ContentView: View {
 struct StartView: View {
     @EnvironmentObject var prefs: Prefs
     @State var selection: Int? = nil
-    @State var logoutAlert: Bool = false
+    @State var isPressedLogOut: Bool = false
     
     var body: some View {
         NavigationView {
@@ -35,15 +35,15 @@ struct StartView: View {
                         Text("")
                     }.hiddenNavigationBarStyle()
                     
-                    Button(action: { self.logoutAlert = true }) {
+                    Button(action: { self.isPressedLogOut = true }) {
                         HStack {
                             Image(systemName: "arrow.uturn.left.circle")
                             Text("logout")
                         }.font(.system(size: 24))
-                    }.alert(isPresented: $logoutAlert) {
+                    }.alert(isPresented: $isPressedLogOut) {
                         Alert(title: Text("Log out").bold(),
                               message: Text("Are you sure?"),
-                              primaryButton: .cancel( {self.logoutAlert = false} ),
+                              primaryButton: .cancel(),
                               secondaryButton: .destructive(Text("Log out")) {
                                 self.selection = 0
                         })

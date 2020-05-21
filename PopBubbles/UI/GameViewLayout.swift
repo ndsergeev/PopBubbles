@@ -14,6 +14,7 @@ struct GameViewLayout: View {
     @EnvironmentObject var prefs: Prefs
     @State var selection: Int? = nil
     @State var localHighestScore: Int = 0
+    @State var isPressedFinish: Bool = false
     
     var body: some View {
         GameView()
@@ -30,18 +31,23 @@ struct GameViewLayout: View {
                 Spacer()
                 if self.prefs.gameIsPaused && !self.prefs.gameIsOver {
                     VStack {
-                        Button(action: {
-                            // In case of finishing the game before the timer
-                            // your progress is lost
-                            self.prefs.highestScore = self.localHighestScore
-                            
-                            self.presentationMode.wrappedValue.dismiss()
-                            self.prefs.gameIsPaused.toggle()
-                        }) {
+                        Button(action: { self.isPressedFinish = true }) {
                             Text("FINISH")
                                 .font(.title)
                                 .foregroundColor(.white)
                                 .padding(20)
+                        }.alert(isPresented: $isPressedFinish) {
+                            Alert(title: Text("Warning").bold(),
+                                  message: Text("You'll lose your current progress if you leave now"),
+                                  primaryButton: .cancel(),
+                                  secondaryButton: .destructive(Text("Leave")) {
+                                    // In case of finishing the game before the timer
+                                    // your progress is lost
+                                    self.prefs.highestScore = self.localHighestScore
+                                    
+                                    self.presentationMode.wrappedValue.dismiss()
+                                    self.prefs.gameIsPaused.toggle()
+                            })
                         }
                         
                         Button(action: {

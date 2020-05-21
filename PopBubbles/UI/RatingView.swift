@@ -23,7 +23,7 @@ struct RatingView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @EnvironmentObject var prefs: Prefs
-    @State var isConfirmedDataRemoval = false
+    @State var isPressedClear = false
     
     var body: some View {
         NavigationView {
@@ -45,13 +45,13 @@ struct RatingView: View {
                     Spacer()
                     
                     Button(action: {
-                        self.isConfirmedDataRemoval = true
+                        self.isPressedClear = true
                     }) {
                         Text("Clear")
-                    }.alert(isPresented: $isConfirmedDataRemoval) {
+                    }.alert(isPresented: $isPressedClear) {
                         Alert(title: Text("Warning").bold(),
                               message: Text("If you confirm all the records and scores would be lost"),
-                              primaryButton: .cancel( {self.isConfirmedDataRemoval = false} ),
+                              primaryButton: .cancel(),
                               secondaryButton: .destructive(Text("Confirm")) {
                                 self.prefs.clearRecords()
                         })

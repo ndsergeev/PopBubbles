@@ -84,9 +84,7 @@ class SKGameScene: SKScene {
             
             if self.bubbleExistsTime > 1 {
                 
-                removeAllBubbles()
-                
-                spawnBubbles(number: Int(prefs!.bubbleNumberSlider))
+                replaceBubbles()
                 
                 self.bubbleExistsTime = 0
             }
@@ -111,6 +109,46 @@ class SKGameScene: SKScene {
         }
         
         self.lastUpdateTime = currentTime
+    }
+    
+    func replaceBubbles() {
+        // remove random bubbles
+        for i in (0..<bubbleHolder.count).reversed() {
+            if Bool.random() {
+                bubbleHolder[i].bubble?.removeFromParent()  // unparent node
+                bubbleHolder.remove(at: i)                  // and then remove element
+            }
+        }
+        
+        
+        var cellsCopy = cells
+        let diff: Int = cellsCopy.count - Int(prefs!.bubbleNumberSlider)
+        var counter: Int = 0
+        // remove cells
+        if bubbleHolder.count > 0 {
+            for bubbleCell in bubbleHolder {
+                if let cellInd = cellsCopy.firstIndex(where: { $0 == bubbleCell.cell } ) {
+                    cellsCopy.remove(at: cellInd)
+                    counter += 1
+                }
+            }
+        }
+        
+        let diffOfDiff = diff - counter
+        if diffOfDiff > 0 {
+            for _ in 0..<diff {
+                cellsCopy.remove(at: Int.random(in: 0..<cellsCopy.count))
+            }
+        }
+        
+        // spawn random number of bubbles but <= Max available
+        for _ in 0..<cellsCopy.count {
+            if Bool.random() {
+                let randomInd = Int.random(in: 0..<cellsCopy.count)
+                spawnSingleBubble(cell: cellsCopy[randomInd])
+                cellsCopy.remove(at: randomInd)
+            }
+        }
     }
     
     func removeAllBubbles() {
@@ -194,6 +232,16 @@ class SKGameScene: SKScene {
         return CGFloat.random(in: rangeFrom...rangeTo)
     }
     
+    func spawnSingleBubble(cell: CGRect) {
+        let bubRad = bubbleRadius()
+        let position = randBubblePositionInCell(cell: cell, radius: bubRad)
+        let bub = Bubble(col: randBubbleColor(), pos: position, rad: bubRad)
+        bubbleHolder.append(BubbleInCell(cell: cell, bubble: bub!))
+        
+        self.addChild(bub!)
+        animateBubbleOnAppear(bubble: bub!)
+    }
+    
     func spawnBubbles(number: Int) -> Void {
         if !cells.isEmpty {
             var cellsCopy = cells
@@ -214,13 +262,7 @@ class SKGameScene: SKScene {
             }
             
             for cell in cellsCopy {
-                let bubRad = bubbleRadius()
-                let position = randBubblePositionInCell(cell: cell, radius: bubRad)
-                let bub = Bubble(col: randBubbleColor(), pos: position, rad: bubRad)
-                bubbleHolder.append(BubbleInCell(cell: cell, bubble: bub!))
-                
-                self.addChild(bub!)
-                animateBubbleOnAppear(bubble: bub!)
+                spawnSingleBubble(cell: cell)
             }
         }
     }
@@ -256,23 +298,28 @@ extension SKGameScene {
         
         for touch in touches {
             let location = touch.location(in: self)
-            for item in bubbleHolder {
-                if item.bubble!.contains(location) {
-                    
-                    if item.bubble!.color == previousBubbleColor {
-                        self.prefs!.lastScore += Int(((Double(item.bubble!.gamePoints) * 1.5)).rounded())
+            var indexes: [Int] = [Int]()
+            for bubbleInd in 0..<bubbleHolder.count {
+                if bubbleHolder[bubbleInd].bubble!.contains(location) {
+                    if bubbleHolder[bubbleInd].bubble!.color == previousBubbleColor {
+                        self.prefs!.lastScore += Int(((Double(bubbleHolder[bubbleInd].bubble!.gamePoints) * 1.5)).rounded())
                     } else {
-                        self.prefs!.lastScore += Int(item.bubble!.gamePoints)
+                        self.prefs!.lastScore += Int(bubbleHolder[bubbleInd].bubble!.gamePoints)
                     }
                     
-                    previousBubbleColor = item.bubble!.color
+                    previousBubbleColor = bubbleHolder[bubbleInd].bubble!.color
                     
-                    item.bubble!.removeFromParent()
+                    indexes.append(bubbleInd)
+                    bubbleHolder[bubbleInd].bubble!.removeFromParent()
                     
                     if prefs!.highestScore < prefs!.lastScore {
                         prefs!.highestScore = prefs!.lastScore
                     }
                 }
+            }
+            
+            for ind in indexes {
+                bubbleHolder.remove(at: ind)
             }
         }
     }
