@@ -27,7 +27,10 @@ struct GameView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> SKView {
         let view = SKView(frame: .zero)
+
         view.preferredFramesPerSecond = 60
+        
+        // These two lines to comment
         view.showsFPS = true
         view.showsNodeCount = true
 

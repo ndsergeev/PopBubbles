@@ -284,6 +284,18 @@ class SKGameScene: SKScene {
         let repeatSequence = SKAction.repeatForever(SKAction.sequence([animPath, animPath.reversed()]))
         bubble.run(repeatSequence)
     }
+    
+    func effectOnBubbleTouch(location: CGPoint, color: UIColor) {
+        let effectNode: SKEmitterNode = SKEmitterNode(fileNamed: "BubbleExposion")!
+        effectNode.position = location
+        effectNode.particleColor = .black
+        
+        self.addChild(effectNode)
+        effectNode.particleColor = .blue
+        effectNode.run(.scale(by: 0.3, duration: 1.2), completion: {
+            effectNode.removeFromParent()
+        })
+    }
 }
 
 #if os(iOS)
@@ -308,6 +320,8 @@ extension SKGameScene {
                     }
                     
                     previousBubbleColor = bubbleHolder[bubbleInd].bubble!.color
+                    
+                    effectOnBubbleTouch(location: bubbleHolder[bubbleInd].bubble!.position, color: bubbleHolder[bubbleInd].bubble!.fillColor)
                     
                     indexes.append(bubbleInd)
                     bubbleHolder[bubbleInd].bubble!.removeFromParent()

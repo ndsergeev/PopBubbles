@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		161BD6472476E62A00597C59 /* BubbleExposion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 161BD6462476E62A00597C59 /* BubbleExposion.sks */; };
 		162116E024548253004B6DF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116DF24548253004B6DF4 /* AppDelegate.swift */; };
 		162116E224548253004B6DF4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116E124548253004B6DF4 /* SceneDelegate.swift */; };
 		162116E424548253004B6DF4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162116E324548253004B6DF4 /* ContentView.swift */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		161BD6462476E62A00597C59 /* BubbleExposion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BubbleExposion.sks; sourceTree = "<group>"; };
 		162116DC24548253004B6DF4 /* PopBubbles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PopBubbles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		162116DF24548253004B6DF4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		162116E124548253004B6DF4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				16A30A4024718E1F00FC5047 /* UI */,
 				161326A0246FA1EE00CF5F77 /* Components */,
 				162116F5245482F2004B6DF4 /* GameView.swift */,
+				161BD6462476E62A00597C59 /* BubbleExposion.sks */,
 				162116F324548268004B6DF4 /* GameScene.swift */,
 				162116E524548253004B6DF4 /* Assets.xcassets */,
 				162116EA24548253004B6DF4 /* LaunchScreen.storyboard */,
@@ -172,6 +175,7 @@
 			files = (
 				162116EC24548253004B6DF4 /* LaunchScreen.storyboard in Resources */,
 				162116E924548253004B6DF4 /* Preview Assets.xcassets in Resources */,
+				161BD6472476E62A00597C59 /* BubbleExposion.sks in Resources */,
 				162116E624548253004B6DF4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
