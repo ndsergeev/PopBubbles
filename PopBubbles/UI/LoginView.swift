@@ -36,7 +36,7 @@ struct LoginView: View {
                 
                 HStack {
                     Text("PoPit ")
-                    Text("🎈").animation(.interpolatingSpring(mass: 0.001, stiffness: 0.001, damping: 10, initialVelocity: 5))
+                    Text("🎈").animation(Animation.interactiveSpring(response: 3, dampingFraction: 0.1, blendDuration: 1))
                 }.font(.system(size: 48))
                 
                 Spacer()

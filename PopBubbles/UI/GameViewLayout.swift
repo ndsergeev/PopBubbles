@@ -25,6 +25,17 @@ struct GameViewLayout: View {
         .background(Color(.darkGray).edgesIgnoringSafeArea(.all))
         .hiddenNavigationBarStyle()
         .overlay(
+            VStack {
+                Spacer()
+                if !self.prefs.gameIsPaused && !self.prefs.gameIsOver && self.prefs.bubbleNumberSlider == 0 {
+                    Text("funny enough?").font(.title)
+                    Text("🤨").font(.system(size: 60))
+                }
+                Spacer()
+            }.padding(20)
+                .foregroundColor(.white)
+        )
+        .overlay(
             GameStatsView()
         ).overlay(
             VStack {
