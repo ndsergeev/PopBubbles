@@ -30,9 +30,9 @@ struct GameView: UIViewRepresentable {
 
         view.preferredFramesPerSecond = 60
         
-        // These two lines to comment
-        view.showsFPS = true
-        view.showsNodeCount = true
+        // These two lines to comment/uncomment
+//        view.showsFPS = true
+//        view.showsNodeCount = true
 
         let mainScene = SKGameScene(size: view.bounds.size, prefs: context.coordinator.prefs)
 
